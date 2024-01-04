@@ -1,10 +1,13 @@
-/* eslint-disable prettier/prettier */
 import {ID, Account, Client} from 'appwrite';
 import Config from 'react-native-config';
+
 import Snackbar from 'react-native-snackbar';
+
 const appwriteClient = new Client();
-const appwrite_Endpoint: string = Config.APPWRITE_ENDPOINT!;
-const appwrite_Project_Id: string = Config.APPWRITE_PROJECT_ID!;
+
+const APPWRITE_ENDPOINT: string = Config.APPWRITE_ENDPOINT!;
+const APPWRITE_PROJECT_ID: string = Config.APPWRITE_PROJECT_ID!;
+
 type CreateUserAccount = {
   email: string;
   password: string;
@@ -17,62 +20,69 @@ type LoginUserAccount = {
 
 class appwriteauth {
   account;
+
   constructor() {
     appwriteClient
-      .setEndpoint(appwrite_Endpoint)
-      .setProject(appwrite_Project_Id);
+      .setEndpoint(APPWRITE_ENDPOINT)
+      .setProject(APPWRITE_PROJECT_ID);
+
     this.account = new Account(appwriteClient);
   }
 
-  async CreateAccount({email, password, name}: CreateUserAccount) {
+  //create a new record of user inside appwrite
+
+  async createAccount({email, password, name}: CreateUserAccount) {
     try {
-      const UserAccount = await this.account.create(
+      const userAccount = await this.account.create(
         ID.unique(),
         email,
         password,
         name,
       );
-      if (UserAccount) {
+      if (userAccount) {
+        //TODO: create login feature
         return this.login({email, password});
       } else {
-        return UserAccount;
+        return userAccount;
       }
     } catch (error) {
       Snackbar.show({
         text: String(error),
         duration: Snackbar.LENGTH_LONG,
       });
-      console.log('AppWrite Servie:: CreateAccount()' + error);
+      console.log('Appwrite service :: createAccount() :: ' + error);
     }
   }
+
   async login({email, password}: LoginUserAccount) {
     try {
+      console.log(email, password);
+
       return await this.account.createEmailSession(email, password);
     } catch (error) {
       Snackbar.show({
         text: String(error),
         duration: Snackbar.LENGTH_LONG,
       });
-      console.log('AppWrite Servie:: Login()' + error);
+      console.log('Appwrite service :: loginAccount() :: ' + error);
     }
   }
-  async GetCurrentSession() {
+
+  async getCurrentUser() {
     try {
       return await this.account.get();
     } catch (error) {
-      Snackbar.show({
-        text: String(error),
-        duration: Snackbar.LENGTH_LONG,
-      });
-      console.log('AppWrite Servie:: GetcurrentSession()' + error);
+      console.log('Appwrite service :: getCurrentAccount() :: ' + error);
     }
   }
+
   async logout() {
     try {
       return await this.account.deleteSession('current');
     } catch (error) {
-      console.log('AppWrite Servie:: GetcurrentSession()' + error);
+      console.log('Appwrite service :: logout() :: ' + error);
     }
   }
 }
+
 export default appwriteauth;
